@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setToken, setUser } from '../store/authSlice';
-import { login } from '../services/api'; // Import the login function
+import { login } from '../services/api';
+import Button from '../components/Button';
+import Input from '../components/Input';
+import ErrorMessage from '../components/ErrorMessage';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,37 +11,42 @@ const SignIn: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Pre-fill email and password if "Remember Me" was checked
+    const remember = localStorage.getItem('rememberMe') === 'true';
+    if (remember) {
+      setEmail(localStorage.getItem('userEmail') || '');
+      setPassword(localStorage.getItem('userPassword') || '');
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     try {
-      // Call the login function with the user's email and password
       const response = await login(email, password);
+      const token = response.data.token;
+      if (token) {
+        localStorage.setItem('token', token);
+        navigate('/dashboard');
 
-      // If login is successful, store the token and user data
-      const { token, user } = response.data;
-      dispatch(setToken(token));
-      dispatch(setUser(user));
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+          localStorage.setItem('userEmail', email);
+          localStorage.setItem('userPassword', password);
+        } else {
+          localStorage.removeItem('rememberMe');
+          localStorage.removeItem('userEmail');
+          localStorage.removeItem('userPassword');
+        }
 
-      // Store token in localStorage
-      localStorage.setItem('token', token);
-
-      // Optionally store credentials if "Remember Me" is checked
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-        localStorage.setItem('userEmail', email);
       } else {
-        localStorage.removeItem('rememberMe');
-        localStorage.removeItem('userEmail');
+        setError('Login failed. Please try again.');
       }
-
-      // Redirect to the dashboard
-      navigate('/dashboard');
     } catch (err) {
-      console.error('Sign-in Error:', err);
       setError('Invalid email or password');
     }
   };
@@ -50,37 +56,29 @@ const SignIn: React.FC = () => {
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-gray-800">Sign In</h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="text-red-600 text-sm text-center mb-4">{error}</div>
-          )}
+          {error && <ErrorMessage message={error} />}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email address
-            </label>
-            <input
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+            <Input
               id="email"
               name="email"
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 px-3 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="you@example.com"
+              required
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <Input
               id="password"
               name="password"
               type="password"
-              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 px-3 py-2 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="********"
+              required
             />
           </div>
           <div className="flex items-center justify-between">
@@ -93,31 +91,20 @@ const SignIn: React.FC = () => {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember me</label>
             </div>
             <div className="text-sm">
-              <Link to="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
-              </Link>
+              <Link to="#" className="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</Link>
             </div>
           </div>
           <div>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Sign In
-            </button>
+            <Button type="submit">Sign In</Button>
           </div>
         </form>
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link to="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign Up
-            </Link>
+            <Link to="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">Sign Up</Link>
           </p>
         </div>
       </div>

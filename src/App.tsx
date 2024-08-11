@@ -4,12 +4,12 @@ import SignIn from './pages/Signin';
 import SignUp from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import RequireAuth from './components/RequireAuth';
+
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-      <Route path="/" element={<SignIn />} />
-
+        <Route path="/" element={<SignIn />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         
@@ -18,7 +18,7 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
         
-        {/* Add more routes as needed */}
+
       </Routes>
     </Router>
   );
