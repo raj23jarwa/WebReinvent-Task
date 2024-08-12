@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { register } from '../services/api';
-import Button from '../components/Button';
-import Input from '../components/Input';
-import ErrorMessage from '../components/ErrorMessage';
+import React, { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Link, useNavigate } from "react-router-dom";
+import { register } from "../services/api";
+import Button from "../components/Button";
+import Input from "../components/Input";
+import ErrorMessage from "../components/ErrorMessage";
 
 const SignUp: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -17,7 +19,7 @@ const SignUp: React.FC = () => {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
@@ -26,32 +28,53 @@ const SignUp: React.FC = () => {
       const existingUser = localStorage.getItem(email);
 
       if (existingUser) {
-        setError('An account with this email already exists.');
-        return;
+        setError("An account with this email already exists.");
+        return toast.warning("Already have an account 😥", {
+          position: "top-right",
+          autoClose: 2000,
+        });
       }
 
       const response = await register(email, password);
-      const token = response.data.token;
-      
+
       // Save email to localStorage to simulate user registration
       localStorage.setItem(email, JSON.stringify({ email, password }));
-      localStorage.setItem('token', token);
+      console.log("Navigating and showing toast");
 
-      // ;
+      // Navigate to sign in page and show success toast
+      toast.success("Signup successful! 🚀", {
+        position: "top-right",
+        autoClose: 1000,
+      });
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000); // Delay navigation for 3 seconds to show the toast
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      toast.error("Registration failed ❌", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+      setError(
+        'The api accept only "eve.holt@reqres.in" mail. Please try again.'
+      );
     }
-    navigate('/signin')
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Sign Up</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800">
+          Sign Up
+        </h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && <ErrorMessage message={error} />}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email address
+            </label>
             <Input
               id="email"
               name="email"
@@ -63,7 +86,12 @@ const SignUp: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
             <Input
               id="password"
               name="password"
@@ -75,7 +103,12 @@ const SignUp: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <label
+              htmlFor="confirm-password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Confirm Password
+            </label>
             <Input
               id="confirm-password"
               name="confirm-password"
@@ -90,10 +123,16 @@ const SignUp: React.FC = () => {
             <Button type="submit">Sign Up</Button>
           </div>
         </form>
+         <ToastContainer/>
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link to="/signin" className="font-medium text-indigo-600 hover:text-indigo-500">Sign In</Link>
+            Already have an account?{" "}
+            <Link
+              to="/signin"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Sign In
+            </Link>
           </p>
         </div>
       </div>

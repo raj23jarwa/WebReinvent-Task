@@ -4,6 +4,8 @@ import { login } from '../services/api';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import ErrorMessage from '../components/ErrorMessage';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -22,6 +24,7 @@ const SignIn: React.FC = () => {
     }
   }, []);
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -31,7 +34,15 @@ const SignIn: React.FC = () => {
       const token = response.data.token;
       if (token) {
         localStorage.setItem('token', token);
-        navigate('/dashboard');
+        sessionStorage.setItem('userEmail', email); // Store the email in session storage
+
+        toast.success("Signin successful! 🚀", {
+          position: "top-right",
+          autoClose: 1000,
+        });
+        setTimeout(() => {
+          navigate("/Dashboard");
+        }, 2000);
 
         if (rememberMe) {
           localStorage.setItem('rememberMe', 'true');
@@ -44,9 +55,17 @@ const SignIn: React.FC = () => {
         }
 
       } else {
+        toast.error("Login failed ❌", {
+          position: "top-right",
+          autoClose: 3000,
+        });
         setError('Login failed. Please try again.');
       }
     } catch (err) {
+      toast.warning("Invalid email or password 😥", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       setError('Invalid email or password');
     }
   };
@@ -101,6 +120,7 @@ const SignIn: React.FC = () => {
             <Button type="submit">Sign In</Button>
           </div>
         </form>
+        <ToastContainer/>
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}

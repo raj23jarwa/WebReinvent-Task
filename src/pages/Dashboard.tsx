@@ -13,7 +13,7 @@ const Dashboard: React.FC = () => {
       navigate('/signin');
     } else {
       // Set user email or fetch user info if needed
-      const savedEmail = localStorage.getItem('userEmail');
+      const savedEmail = localStorage.getItem('userEmail') || sessionStorage.getItem('userEmail') 
       setUserEmail(savedEmail || 'User');
     }
   }, [navigate]);
